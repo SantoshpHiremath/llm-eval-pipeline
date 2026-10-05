@@ -138,11 +138,10 @@ class TestLLMAsJudgeWithFixedClient:
 
 class TestLLMAsJudgeWithMockLLMClient:
     """End-to-end tests against the project's actual MockLLMClient -- the
-    only LLMClient implementation genuinely exercised in this environment
-    (see llm_client.py's HONEST DISCLOSURE). This proves the full real
-    path: LLMAsJudge builds a prompt, MockLLMClient.complete() is called
-    with it and returns real JSON text (not a canned test double), and
-    LLMAsJudge parses that real response back into a JudgeVerdict."""
+    only LLMClient implementation exercised here
+    (see llm_client.py). This exercises the full path: LLMAsJudge builds a prompt, MockLLMClient.complete() is called
+    with it and returns JSON text (not a canned test double), and
+    LLMAsJudge parses that response back into a JudgeVerdict."""
 
     def test_semantically_correct_answer_passes_most_of_the_time(self):
         client = MockLLMClient()

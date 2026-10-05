@@ -1,7 +1,7 @@
 """
 End-to-end demo: builds the sample golden+silver dataset, runs it through
 the mock LLM backend and the keyword judge, and prints a report broken
-down by dataset tier -- reflecting the honest distinction that a golden
+down by dataset tier -- reflecting the distinction that a golden
 failure (regression against verified ground truth) and a silver failure
 (an unverified expectation needing human review) mean different things
 and should be surfaced differently.
@@ -19,9 +19,7 @@ def main():
     print("=" * 70)
     print(
         "NOTE: this run uses MockLLMClient (deterministic, no network "
-        "calls) — there is no OpenAI/Anthropic API key configured in "
-        "this environment. See README for the full disclosure on what "
-        "is and isn't verified against a live LLM API.\n"
+        "calls). See the README Notes for details on the LLM backends.\n"
     )
 
     dataset = build_sample_dataset()
@@ -53,16 +51,15 @@ def main():
         print(f"[{tier:>6}] {item_id:<4} {verdict:<4} | {reason}")
 
     print("\n" + "-" * 70)
-    print("COMPARISON: LLMAsJudge (a real LLM-as-judge) vs. KeywordJudge")
+    print("COMPARISON: LLMAsJudge vs. KeywordJudge")
     print("-" * 70)
     print(
         "The same MockLLMClient backend can also grade itself: LLMAsJudge "
-        "builds a real grading prompt, calls LLMClient.complete() with it, "
-        "and parses a real JSON verdict back -- a genuinely different "
-        "mechanism from KeywordJudge's deterministic keyword-overlap check, "
-        "even though both are exercised here against the same mock backend "
-        "(see judge.py's LLMAsJudge docstring for exactly what that does "
-        "and doesn't prove without a live API key).\n"
+        "builds a grading prompt, calls LLMClient.complete() with it, "
+        "and parses a JSON verdict back -- a different mechanism from "
+        "KeywordJudge's deterministic keyword-overlap check, even though "
+        "both are exercised here against the same mock backend "
+        "(see judge.py's LLMAsJudge docstring).\n"
     )
     llm_judge = LLMAsJudge(MockLLMClient())
     _, llm_judge_report = run_evaluation(MockLLMClient(), llm_judge, dataset)

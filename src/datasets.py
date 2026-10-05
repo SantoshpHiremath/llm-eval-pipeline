@@ -1,7 +1,6 @@
 """
-Golden and Silver dataset management -- a real, two-tier distinction (not
-present in any prior project in this portfolio), matching how evaluation
-datasets are actually used in practice:
+Golden and Silver dataset management -- a two-tier distinction matching how
+evaluation datasets are used in practice:
 
 - GOLDEN examples are hand-verified, high-confidence ground truth: a human
   has reviewed the input, the expected output, and signed off that the

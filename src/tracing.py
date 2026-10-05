@@ -1,18 +1,12 @@
 """
 Structured evaluation tracing, modeled on Langfuse's trace/span/score
 concepts (a trace holds one end-to-end run; spans are timed sub-steps
-within it; scores attach a named numeric/boolean judgment to a trace) --
-named explicitly as "modeled on" Langfuse rather than "built with"
-Langfuse: this project implements its own lightweight in-memory version
-of that data model, it is NOT the actual Langfuse SDK/platform. Real
-Langfuse integration would mean calling their SDK to ship traces to
-their backend; this instead demonstrates understanding of the concepts
-(trace = one run, span = a step, score = a judgment attached to a trace)
-with a real, tested, swappable implementation of the same shape.
-
-This distinction is stated here and repeated in the README so it's never
-presented as "Langfuse experience" when it's actually "built the same
-conceptual model Langfuse uses, tested independently."
+within it; scores attach a named numeric/boolean judgment to a trace).
+This is a lightweight in-memory implementation of that data model,
+separate from the Langfuse SDK/platform. Integrating Langfuse itself
+would mean calling its SDK to ship traces to its backend; this module
+implements the same concepts (trace = one run, span = a step, score = a
+judgment attached to a trace) in a tested, swappable form.
 """
 from __future__ import annotations
 
@@ -88,9 +82,8 @@ class Trace:
 
 class TraceStore:
     """In-memory collection of traces from a batch evaluation run, with
-    aggregate reporting -- the "analyze metrics, identify edge cases,
-    track quality" part of the job posting, done over real (if mocked-
-    backend) traces rather than only single-item output.
+    aggregate reporting -- analyzing metrics, identifying edge cases and
+    tracking quality across traces rather than only single-item output.
     """
 
     def __init__(self):

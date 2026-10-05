@@ -1,14 +1,12 @@
 """
 FastAPI service exposing the evaluation pipeline over REST, with real
-API-key authentication -- a deliberate, direct fix for a gap found while
-re-verifying an earlier project (rag-tool-fastapi) for this same job
-application: that project had a working FastAPI service but NO
-authentication anywhere. This one does.
+API-key authentication: every endpoint except /health requires a valid
+x-api-key header.
 
 Endpoints:
   GET  /health              -- no auth required
   POST /ask                 -- requires API key; asks the LLM client
-                                (mock backend in this environment) a
+                                (mock backend by default) a
                                 single question, returns its answer
   POST /evaluate             -- requires API key; runs the full dataset
                                 through the evaluation pipeline, returns
@@ -27,8 +25,7 @@ from src.judge import KeywordJudge
 from src.llm_client import LLMClient, MockLLMClient
 
 # In a real deployment this would come from a secrets manager, not an
-# env var default — the insecure default here is explicitly for local
-# dev/testing only, and the code says so.
+# env var default — the default here is for local dev/testing only.
 API_KEY = os.environ.get("EVAL_PIPELINE_API_KEY", "dev-only-insecure-key")
 
 app = FastAPI(title="LLM Evaluation Pipeline API")

@@ -6,14 +6,11 @@ expected output, decide pass/fail (and why). Three judges:
   correct phrasing. Deterministic, no LLM call.
 - KeywordJudge: checks that expected key facts/phrases appear in the
   output, tolerant of paraphrasing. Deterministic, no LLM call.
-- LLMAsJudge: a REAL LLM-as-judge -- uses an LLMClient (see
-  llm_client.py) to grade another model's output by prompting it to
-  compare actual vs. expected and return a structured verdict. This is
-  genuinely an LLM judging an LLM, end to end, not a keyword heuristic
-  relabeled as "LLM-as-judge" -- see its docstring below for what that
-  does and doesn't prove given this project only has MockLLMClient
-  actually exercised (no live API key -- see README, same disclosure as
-  llm_client.py).
+- LLMAsJudge: an LLM-as-judge -- uses an LLMClient (see llm_client.py)
+  to grade another model's output by prompting it to compare actual vs.
+  expected and return a structured verdict. The grading decision comes
+  from a model's response, not from a keyword heuristic. It is exercised
+  here with MockLLMClient (see its docstring below and the README Notes).
 """
 from __future__ import annotations
 
@@ -106,27 +103,20 @@ Respond with strict JSON only, in this exact shape:
 
 
 class LLMAsJudge(Judge):
-    """A real LLM-as-judge: takes any LLMClient (see llm_client.py) and
-    uses it to grade another model's output, by prompting it to compare
-    actual vs. expected and return a structured pass/fail verdict. This
-    is genuinely "an LLM judging an LLM" end to end -- the grading
-    decision comes from a model's response to a prompt, not from a
-    keyword/exact-match heuristic (contrast with ExactMatchJudge and
+    """An LLM-as-judge: takes any LLMClient (see llm_client.py) and uses
+    it to grade another model's output, by prompting it to compare
+    actual vs. expected and return a structured pass/fail verdict. The
+    grading decision comes from a model's response to a prompt, not from
+    a keyword/exact-match heuristic (contrast with ExactMatchJudge and
     KeywordJudge above).
 
-    What this proves and doesn't, given this project's constraints (see
-    llm_client.py's HONEST DISCLOSURE, which applies here identically):
-    with MockLLMClient (the only LLMClient actually exercised in this
-    environment -- no live API key available), this class is fully real
-    and fully tested: it builds a real grading prompt, calls
-    LLMClient.complete() with it, and parses a real JSON response back
-    into a JudgeVerdict, including handling a malformed/non-JSON response
-    without crashing (see test_judge.py's TestLLMAsJudge). What it does
-    NOT prove is that a live model (GPT-4o-mini, Claude, etc.) would
-    produce good, well-calibrated verdicts -- that would require actually
-    running this against RealOpenAIClient/RealAnthropicClient, which have
-    never been executed in this environment either. The mechanism is
-    real and tested; the judgment quality of a live model is unverified.
+    With MockLLMClient (the backend exercised in the tests), this class
+    builds a grading prompt, calls LLMClient.complete() with it, and
+    parses the JSON response back into a JudgeVerdict, including handling
+    a malformed/non-JSON response without crashing (see test_judge.py's
+    TestLLMAsJudge). Verdict quality with a live model (GPT-4o-mini,
+    Claude, etc.) would be measured by running this against
+    RealOpenAIClient/RealAnthropicClient with an API key.
     """
 
     def __init__(self, client, system_prompt: str = ""):

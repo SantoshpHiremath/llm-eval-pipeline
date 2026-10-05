@@ -1,25 +1,17 @@
 """
 LLM client abstraction.
 
-HONEST DISCLOSURE (see README for the full version): this sandbox has no
-OpenAI or Anthropic API key configured, so `RealOpenAIClient` and
-`RealAnthropicClient` below have never actually been executed against a
-live API in this environment. Their call shapes are written to match the
-real SDKs' actual interfaces (openai>=1.0 `client.chat.completions.create`,
-anthropic `client.messages.create`) as closely as possible without being
-able to run them, but "written to match the real interface" is NOT the
-same claim as "tested against a live API" -- that gap is disclosed
-explicitly, not hidden.
+Backends: `MockLLMClient` is a deterministic mock used by every test and by
+`run_pipeline.py`. `RealOpenAIClient` and `RealAnthropicClient` follow the
+real SDKs' call shapes (openai>=1.0 `client.chat.completions.create`,
+anthropic `client.messages.create`); they need an API key and have not
+been run against a live API yet.
 
-What IS real and fully tested here: the `LLMClient` interface itself, the
-`MockLLMClient` implementation (deterministic, used by every test and by
-`run_pipeline.py`), and the fact that `RealOpenAIClient`/
-`RealAnthropicClient` are swappable in through the exact same interface
-with zero changes to any calling code -- which is the actual point of
-building this as an interface at all: the evaluation pipeline, the API
-routes, and the tests are all written against `LLMClient`, not against
-any specific vendor SDK, so plugging in a real key later requires
-changing zero pipeline code.
+The `LLMClient` interface, the `MockLLMClient` implementation and the
+swap-in path for the real clients are fully tested. The evaluation
+pipeline, the API routes and the tests are all written against
+`LLMClient`, not against any specific vendor SDK, so plugging in a real
+key requires no changes to pipeline code.
 """
 from __future__ import annotations
 
@@ -51,12 +43,11 @@ class LLMClient(ABC):
 class MockLLMClient(LLMClient):
     """Deterministic mock backend: no network calls, same input always
     gives the same output (seeded by a hash of the prompt), so tests are
-    reproducible. This is the backend actually used by every test and by
-    run_pipeline.py in this environment, since no live API key exists
-    here. Response 'quality' is deliberately varied by prompt content
-    (see _score-affecting keyword injection below) so the evaluation
-    harness has genuine variation to detect, rather than every response
-    being trivially identical.
+    reproducible. This is the backend used by every test and by
+    run_pipeline.py. Response 'quality' is deliberately varied by prompt
+    content (see _score-affecting keyword injection below) so the
+    evaluation harness has genuine variation to detect, rather than every
+    response being identical.
     """
 
     def complete(self, prompt: str, system: str = "") -> LLMResponse:
@@ -163,11 +154,10 @@ class MockLLMClient(LLMClient):
 class RealOpenAIClient(LLMClient):
     """Written to match the real openai>=1.0 SDK's call shape
     (`client.chat.completions.create(model=..., messages=[...])`).
-    NEVER EXECUTED in this sandbox -- there is no OPENAI_API_KEY
-    available here, and instantiating this class raises immediately
-    rather than silently falling back to mock behavior, so it's
-    impossible to accidentally believe a mock response came from a real
-    call.
+    Requires OPENAI_API_KEY. Instantiating this class without a key
+    raises immediately rather than silently falling back to mock
+    behavior, so a mock response is never mistaken for a real call.
+    Not yet run against a live API.
     """
 
     def __init__(self, api_key: str | None = None, model: str = "gpt-4o-mini"):
@@ -207,9 +197,9 @@ class RealOpenAIClient(LLMClient):
 
 class RealAnthropicClient(LLMClient):
     """Written to match the real anthropic SDK's call shape
-    (`client.messages.create(model=..., messages=[...])`). NEVER EXECUTED
-    in this sandbox for the same reason as RealOpenAIClient above — no
-    ANTHROPIC_API_KEY available here. See README for the full disclosure.
+    (`client.messages.create(model=..., messages=[...])`). Requires
+    ANTHROPIC_API_KEY and, like RealOpenAIClient above, is not yet run
+    against a live API. See README Notes.
     """
 
     def __init__(self, api_key: str | None = None, model: str = "claude-3-5-sonnet-latest"):
